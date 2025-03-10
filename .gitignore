@@ -1,0 +1,4 @@
+# .gitignore
+.DS_Store
+*.drawio
+*.pdf
