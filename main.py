@@ -163,7 +163,6 @@ class CICLExperiment:
         prompt_ids = self.tokenizer(prompt, return_tensors="pt")["input_ids"]
         prompt_length = prompt_ids.size(1)
         
-        raw_likelihoods = {}
         normalized_likelihoods = {}
         for label in self.class_labels:
             label = " " + label # Last prompt sentence doesn't contain " " after the "Label:"
@@ -188,21 +187,15 @@ class CICLExperiment:
 
             # Compute raw sequence likelihood
             raw_likelihood = torch.prod(token_probs).item()
-            raw_likelihoods[label.strip()] = raw_likelihood
 
             # Normalize for label length
             normalized_likelihood = raw_likelihood ** (1 / len(label_tokens))
             normalized_likelihoods[label.strip()] = normalized_likelihood
 
-        # Normalize raw probabilites (so that they sum 1)
-        total_norm = sum(raw_likelihoods.values())
-        raw_likelihoods = {label: prob / total_norm for label, prob in raw_likelihoods.items()}
-
-        # Normalize normalized probabilites (so that they sum 1)
+        # Normalize final probabilites (so that they sum to 1)
         total_raw = sum(normalized_likelihoods.values())
         normalized_likelihoods = {label: prob / total_raw for label, prob in normalized_likelihoods.items()}
 
-        #return normalized_likelihoods, raw_likelihoods
         return normalized_likelihoods
     
     def evaluate_shots(self, num_shots: int, corrected_proportion: float) -> Dict:
